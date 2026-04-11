@@ -1,0 +1,4 @@
+city,coffee_price,transit_price,museum_price,beer_price,rideshare_price,club_price,currency_symbol
+Tokyo,400,200,1000,600,2000,3000,¥
+London,3.50,2.80,0,6.00,15.00,20.00,£
+New York,4.50,2.90,25,8.00,20.00,30.00,$

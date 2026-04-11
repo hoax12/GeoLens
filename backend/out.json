@@ -1,0 +1,66 @@
+{
+  "newshound": {
+    "headline": "Tragedy Rocks Pok\u00e9mon Store: Worker Stabbed to Death",
+    "summary": "A shocking incident occurred at a major Tokyo merchandise location this afternoon. Authorities are investigating the details surrounding the fatal stabbing and subsequent self-inflicted injuries.",
+    "tag": "Society & Events",
+    "timeAgo": "1 hr ago"
+  },
+  "gastroGuide": {
+    "dish": "Ichigo Senbei \u00b7 Sweet Cherry Rice Crackers",
+    "restaurant": "Hasunee, Ginza",
+    "tip": "Don't be swayed by the flashier spots in Ginza; Hasunee has a delicate sweetness that truly captures the season. Ask for the daily seasonal pairing as it changes weekly.",
+    "emoji": "\ud83c\udf61"
+  },
+  "factoid": {
+    "fact": "Although Tokyo's current name is associated with its history, the area's human presence can be traced back to archaeological remains dating as far as 5,000 years ago. The city\u2019s original center of power was marked by Edo Castle, constructed between 1457 and 1640.",
+    "source": "Tokyo Metropolitan History Archives"
+  },
+  "ledger": {
+    "day": [
+      {
+        "label": "Coffee",
+        "icon": "\u2615",
+        "priceLocal": "400 \u00a5",
+        "priceUSD": "$2.67",
+        "level": "cheap"
+      },
+      {
+        "label": "Museum Entry",
+        "icon": "\ud83d\uddbc\ufe0f",
+        "priceLocal": "1,000 \u00a5",
+        "priceUSD": "$6.68",
+        "level": "medium"
+      },
+      {
+        "label": "Day Museum Pass/Activity",
+        "icon": "\ud83c\udf9f\ufe0f",
+        "priceLocal": "2,500 \u00a5",
+        "priceUSD": "$16.68",
+        "level": "expensive"
+      }
+    ],
+    "night": [
+      {
+        "label": "Casual Dinner Snack (Street Food)",
+        "icon": "\ud83c\udf62",
+        "priceLocal": "400 \u00a5",
+        "priceUSD": "$2.67",
+        "level": "cheap"
+      },
+      {
+        "label": "Local Beer/Drink",
+        "icon": "\ud83c\udf7a",
+        "priceLocal": "600 \u00a5",
+        "priceUSD": "$4.00",
+        "level": "medium"
+      },
+      {
+        "label": "Club Cover Charge/Drinks",
+        "icon": "\ud83c\udf03",
+        "priceLocal": "3,500 \u00a5",
+        "priceUSD": "$23.33",
+        "level": "expensive"
+      }
+    ]
+  }
+}

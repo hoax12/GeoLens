@@ -14,7 +14,7 @@ from typing import Optional, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from agents import run_factoid, run_gastro, run_ledger, run_newshound
+from v1_agents import run_factoid, run_gastro, run_ledger, run_newshound
 
 logger = logging.getLogger(__name__)
 

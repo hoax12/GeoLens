@@ -1,0 +1,51 @@
+# Environments and secrets
+backend/.env
+backend/.env.*
+geolens-app/.env
+geolens-app/.env.*
+geolens-app/.env.local
+**/.env.local
+
+# Python runtime
+backend/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+
+# Node / Next.js build
+geolens-app/node_modules/
+geolens-app/.next/
+geolens-app/out/
+geolens-app/build/
+geolens-app/*.tsbuildinfo
+geolens-app/tsconfig.tsbuildinfo
+
+# Scratch / debug artifacts (safe to ignore, do not delete)
+backend/debug_dayplan.json
+backend/debug_dayplan2.json
+backend/api_out.txt
+backend/ollama_out.txt
+backend/pip_out.txt
+backend/test_llm_out.txt
+backend/test_llm_sync.txt
+backend/groq_models.txt
+backend/out.json
+backend/test_api_resp.json
+
+# Stale / dead files — never import from these
+backend/v2_state.py
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Git
+.git/
+
+# IDE
+.vscode/
+.gemini/

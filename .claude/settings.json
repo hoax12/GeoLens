@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd backend && .venv/Scripts/activate*)",
+      "Bash(uvicorn*)",
+      "Bash(python -c*)",
+      "Bash(pytest*)",
+      "Bash(pip install -r requirements.txt)",
+      "Bash(cd geolens-app && npm run dev)",
+      "Bash(cd geolens-app && npm run lint)",
+      "Bash(cd geolens-app && npx tsc --noEmit)",
+      "Bash(curl -X POST http://localhost:8000/*)",
+      "Bash(curl -N -X POST http://localhost:8000/*)"
+    ],
+    "deny": [
+      "Bash(cat backend/.env*)",
+      "Bash(cat geolens-app/.env*)",
+      "Bash(echo * > backend/.env*)",
+      "Bash(rm -rf*)",
+      "Bash(pip install *)",
+      "Bash(npm install *)"
+    ]
+  }
+}

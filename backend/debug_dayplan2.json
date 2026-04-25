@@ -1,0 +1,438 @@
+{
+  "plan": {
+    "summary": "Your day in New York starts at 10:30 AM with a visit to The Banksy Museum New York!, a unique and free exhibit that kicks off your day with art. Following this, you'll head to the Richard Rodgers Theatre to catch a performance of Hamilton at 1:00 PM. After the show, you'll take a rideshare to Yankee Stadium for a Classic Tour at 5:00 PM, providing a unique sports experience. Finally, you'll end your day with a performance of The Lion King at the Minskoff Theatre at 7:00 PM. This itinerary was chosen to provide a mix of art, culture, and sports, all while staying within your budget.",
+    "reasoning": "Given your interest in jazz and food, this itinerary may not seem directly aligned, but it was chosen for its variety and the fact that all events were free, allowing for a full day of activities without incurring event costs. The travel logistics were optimized for time and cost, using a mix of transit and rideshare services. Since all events were free, the budget was primarily used for transportation, totaling $50.77, which is well within your budget of $100.00.",
+    "timeline": [
+      {
+        "time": "10:30 AM",
+        "label": "The Banksy Museum New York!",
+        "type": "event",
+        "icon": "art"
+      },
+      {
+        "time": "12:12 PM",
+        "label": "Transit to Richard Rodgers Theatre (12 min)",
+        "type": "travel",
+        "icon": "transit"
+      },
+      {
+        "time": "1:00 PM",
+        "label": "Hamilton",
+        "type": "event",
+        "icon": "art"
+      },
+      {
+        "time": "3:19 PM",
+        "label": "Rideshare to Yankee Stadium (19 min)",
+        "type": "travel",
+        "icon": "rideshare"
+      },
+      {
+        "time": "5:00 PM",
+        "label": "Classic Tour at Yankee Stadium",
+        "type": "event",
+        "icon": "sports"
+      },
+      {
+        "time": "6:20 PM",
+        "label": "Rideshare to Minskoff Theatre (20 min)",
+        "type": "travel",
+        "icon": "rideshare"
+      },
+      {
+        "time": "7:00 PM",
+        "label": "The Lion King",
+        "type": "event",
+        "icon": "art"
+      }
+    ],
+    "map_pins": [
+      {
+        "name": "The Banksy Museum New York!",
+        "lat": 40.7223,
+        "lng": -74.0018,
+        "type": "event"
+      },
+      {
+        "name": "Richard Rodgers Theatre",
+        "lat": 40.7589,
+        "lng": -73.9853,
+        "type": "event"
+      },
+      {
+        "name": "Yankee Stadium",
+        "lat": 40.8296,
+        "lng": -73.9262,
+        "type": "event"
+      },
+      {
+        "name": "Minskoff Theatre",
+        "lat": 40.7567,
+        "lng": -73.9864,
+        "type": "event"
+      }
+    ],
+    "budget_breakdown": {
+      "events": 0.0,
+      "transport": 50.77,
+      "remaining": 49.23
+    },
+    "citations": [
+      {
+        "label": "The Banksy Museum New York!",
+        "url": "https://www.universe.com/events/the-banksy-museum-new-york-tickets-5PKNY0?ref=ticketmaster",
+        "source": "ticketmaster"
+      },
+      {
+        "label": "Hamilton",
+        "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7qyfo",
+        "source": "ticketmaster"
+      },
+      {
+        "label": "Classic Tour at Yankee Stadium",
+        "url": "https://www.ticketmaster.com/classic-tour-at-yankee-stadium-bronx-new-york-04-22-2026/event/1D006374BD575EA7",
+        "source": "ticketmaster"
+      },
+      {
+        "label": "The Lion King",
+        "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7jJvS",
+        "source": "ticketmaster"
+      }
+    ]
+  },
+  "itinerary": [
+    {
+      "time": "10:30:00",
+      "event_name": "The Banksy Museum New York!",
+      "venue": "Banksy Museum New York",
+      "address": "277 Canal St, New York",
+      "lat": 40.7196,
+      "lng": -74.0014,
+      "cost": 0.0,
+      "budget_remaining": 100.0,
+      "notes": "Chosen for its early start time, allowing for a full day of activities, and zero cost."
+    },
+    {
+      "time": "13:00:00",
+      "event_name": "Hamilton",
+      "venue": "Richard Rodgers Theatre",
+      "address": "226 West 46th Street, New York",
+      "lat": 40.7592,
+      "lng": -73.9868,
+      "cost": 0.0,
+      "budget_remaining": 100.0,
+      "notes": "Selected due to its high relevance score and zero cost, fitting well into the morning slot."
+    },
+    {
+      "time": "17:00:00",
+      "event_name": "Classic Tour at Yankee Stadium",
+      "venue": "Yankee Stadium",
+      "address": "1 East 161st Street, Bronx",
+      "lat": 40.8285,
+      "lng": -73.9276,
+      "cost": 0.0,
+      "budget_remaining": 100.0,
+      "notes": "Chosen for its unique category (sports) and late afternoon time, providing variety to the day."
+    },
+    {
+      "time": "19:00:00",
+      "event_name": "The Lion King",
+      "venue": "Minskoff Theatre",
+      "address": "200 West 45th Street, New York",
+      "lat": 40.758,
+      "lng": -73.9858,
+      "cost": 0.0,
+      "budget_remaining": 100.0,
+      "notes": "Selected for its high relevance score and evening time slot, concluding the day with an art event."
+    }
+  ],
+  "logistics": {
+    "legs": [
+      {
+        "from_venue": "Banksy Museum New York",
+        "to_venue": "Richard Rodgers Theatre",
+        "departure_time": "10:30:00",
+        "arrival_time": "13:00:00",
+        "duration_minutes": 12,
+        "mode": "transit",
+        "estimated_cost": 2.75,
+        "instructions": "5.5 km via transit (~12 min)"
+      },
+      {
+        "from_venue": "Richard Rodgers Theatre",
+        "to_venue": "Yankee Stadium",
+        "departure_time": "13:00:00",
+        "arrival_time": "17:00:00",
+        "duration_minutes": 19,
+        "mode": "rideshare",
+        "estimated_cost": 23.69,
+        "instructions": "12.5 km via rideshare (~19 min)"
+      },
+      {
+        "from_venue": "Yankee Stadium",
+        "to_venue": "Minskoff Theatre",
+        "departure_time": "17:00:00",
+        "arrival_time": "19:00:00",
+        "duration_minutes": 20,
+        "mode": "rideshare",
+        "estimated_cost": 24.33,
+        "instructions": "12.9 km via rideshare (~20 min)"
+      }
+    ],
+    "total_transport_cost": 50.77,
+    "total_event_cost": 0.0,
+    "grand_total": 50.77,
+    "budget_ok": true,
+    "budget_warning": null
+  },
+  "events": [
+    {
+      "name": "Hamilton (NY)",
+      "time": "13:00:00",
+      "location": "Richard Rodgers Theatre",
+      "address": "226 West 46th Street, New York",
+      "lat": 40.75920382,
+      "lng": -73.98676323,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/hamilton-ny-new-york-new-york-04-22-2026/event/Z1r9uZrrZbpZ1AvqeQA",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Hamilton",
+      "time": "19:00:00",
+      "location": "Richard Rodgers Theatre-NY",
+      "address": "226 W. 46th St., New York",
+      "lat": 40.7593,
+      "lng": -73.990196,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7qyfo",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Harry Potter and the Cursed Child",
+      "time": "19:00:00",
+      "location": "Lyric Theatre - NY",
+      "address": "213 W 42nd St, New York",
+      "lat": 40.7593,
+      "lng": -73.990196,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7bb_S",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "CATS: The Jellicle Ball",
+      "time": "14:00:00",
+      "location": "Broadhurst Theatre ",
+      "address": "235 West 44th Street, New York",
+      "lat": 40.75809299,
+      "lng": -73.98760791,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/cats-the-jellicle-ball-new-york-new-york-04-22-2026/event/Z1r9uZruZqGZ17JeAz",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Florence + The Machine - Everybody Scream Tour",
+      "time": "19:30:00",
+      "location": "Madison Square Garden",
+      "address": "7th Ave & 32nd Street, New York",
+      "lat": 40.7497062,
+      "lng": -73.9916006,
+      "cost": 0.0,
+      "category": "music",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/florence-the-machine-everybody-scream-tour-new-york-new-york-04-22-2026/event/3B006357CBEF4E33",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Aladdin",
+      "time": "13:00:00",
+      "location": "New Amsterdam Theatre",
+      "address": "214 West 42nd Street, New York",
+      "lat": 40.75605705,
+      "lng": -73.98792867,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/aladdin-new-york-new-york-04-22-2026/event/0300632FAAC10F55",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "FEID vs FERXXO: Falxo Tour - El Mano a Mano Del Año",
+      "time": "19:00:00",
+      "location": "Brooklyn Paramount",
+      "address": "385 Flatbush Ave. Extension, Brooklyn",
+      "lat": 40.69137302,
+      "lng": -73.98124051,
+      "cost": 0.0,
+      "category": "music",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/feid-vs-ferxxo-falxo-tour-el-brooklyn-new-york-04-22-2026/event/00006474E48230BC",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Classic Tour at Yankee Stadium",
+      "time": "17:00:00",
+      "location": "Yankee Stadium",
+      "address": "1 East 161st Street, Bronx",
+      "lat": 40.8285237,
+      "lng": -73.9276264,
+      "cost": 0.0,
+      "category": "sports",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/classic-tour-at-yankee-stadium-bronx-new-york-04-22-2026/event/1D006374BD575EA7",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Wicked (NY)",
+      "time": "14:00:00",
+      "location": "Gershwin Theatre",
+      "address": "222 West 51st Street, New York",
+      "lat": 40.76254204,
+      "lng": -73.98502682,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/wicked-ny-new-york-new-york-04-22-2026/event/Z1r9uZrrZbpZ1AvpKAE",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Zinadelphia: Zina's Boutique",
+      "time": "19:00:00",
+      "location": "Bowery Ballroom",
+      "address": "6 Delancey St., New York",
+      "lat": 40.720364,
+      "lng": -73.993542,
+      "cost": 0.0,
+      "category": "music",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/zinadelphia-zinas-boutique-new-york-new-york-04-22-2026/event/00006436B84FBF10",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "The Lion King (New York, NY)",
+      "time": "19:00:00",
+      "location": "Minskoff Theatre",
+      "address": "200 West 45th Street, New York",
+      "lat": 40.757986,
+      "lng": -73.98577175,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/the-lion-king-new-york-ny-new-york-new-york-04-22-2026/event/Z1r9uZrrZbpZ1Avr9ZF",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "The Lion King",
+      "time": "19:00:00",
+      "location": "Minskoff Theatre",
+      "address": "1515 Broadway, New York",
+      "lat": 40.7593,
+      "lng": -73.990196,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7jJvS",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Rec Hall",
+      "time": "18:00:00",
+      "location": "Mercury Lounge",
+      "address": "217 East Houston St., New York",
+      "lat": 40.722036,
+      "lng": -73.986806,
+      "cost": 0.0,
+      "category": "music",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/rec-hall-new-york-new-york-04-22-2026/event/00006364B24F8C52",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Des Rocs",
+      "time": "18:00:00",
+      "location": "Gramercy Theatre",
+      "address": "127 East 23rd Street, New York",
+      "lat": 40.73975368,
+      "lng": -73.98501292,
+      "cost": 0.0,
+      "category": "music",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/des-rocs-new-york-new-york-04-22-2026/event/00006389CF6DB932",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Allie X",
+      "time": "19:00:00",
+      "location": "Warsaw",
+      "address": "261 Driggs Ave , Brooklyn",
+      "lat": 40.722392,
+      "lng": -73.948408,
+      "cost": 0.0,
+      "category": "music",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/allie-x-brooklyn-new-york-04-22-2026/event/00006366D4C2CB63",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Burnout Paradise",
+      "time": "19:00:00",
+      "location": "Astor Place Theatre",
+      "address": "434 Lafayette Street, New York",
+      "lat": 40.72922383,
+      "lng": -73.99179455,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/burnout-paradise-new-york-new-york-04-22-2026/event/0300636A90D313A9",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Sexual Misconduct of the Middle Classes",
+      "time": "19:30:00",
+      "location": "Audible's Minetta Lane Theatre",
+      "address": "18 Minetta Lane, New York",
+      "lat": 40.7303577,
+      "lng": -74.0012676,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.ticketmaster.com/sexual-misconduct-of-the-middle-classes-new-york-new-york-04-22-2026/event/3000645AD833ADC7",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "The Banksy Museum New York!",
+      "time": "10:30:00",
+      "location": "Banksy Museum New York",
+      "address": "277 Canal St, New York",
+      "lat": 40.7196025,
+      "lng": -74.00135811,
+      "cost": 0.0,
+      "category": "art",
+      "source": "ticketmaster",
+      "url": "https://www.universe.com/events/the-banksy-museum-new-york-tickets-5PKNY0?ref=ticketmaster",
+      "relevance_score": 0.5
+    },
+    {
+      "name": "Faraday Future to Participate in and Host Upcoming New York Investor and Industr",
+      "time": "See article",
+      "location": "New York",
+      "address": "New York",
+      "lat": 0.0,
+      "lng": 0.0,
+      "cost": 0.0,
+      "category": "other",
+      "source": "gnews",
+      "url": "https://www.wallstreet-online.de/nachricht/20727046-faraday-future-to-participate-and-host-upcoming-new-york-investor-and-industry-events-highlighting-its-broader-vision-for-eai-mobility-and-robotics",
+      "relevance_score": 0.5
+    }
+  ],
+  "errors": []
+}

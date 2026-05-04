@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import time
 import httpx
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
@@ -303,7 +304,8 @@ async def fetch_foursquare(
     try:
         r = await client.get(
             f"{FSQ_BASE}/places/search",
-            params=params, headers=headers, timeout=10.0
+            params=params, headers=headers,
+            timeout=httpx.Timeout(connect=4.0, read=5.0),
         )
         r.raise_for_status()
         places = r.json().get("results", [])
@@ -422,11 +424,13 @@ async def scout_node(state: PlannerState) -> dict:
     Writes: events (sorted by relevance_score desc, max 20).
     Falls back to Gemini LLM suggestions when all external APIs return nothing.
     """
+    start   = time.monotonic()
     city    = state["city"]
     prefs   = state.get("preferences", [])
     date    = state.get("date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     budget  = state.get("budget", 100.0)
     errors  = list(state.get("errors", []))
+    run_stats = list(state.get("run_stats", []))
 
     async with httpx.AsyncClient() as client:
         # Geocode city first (all APIs need lat/lng)
@@ -434,7 +438,8 @@ async def scout_node(state: PlannerState) -> dict:
             lat, lng = await geocode_city(city, client)
         except Exception as e:
             errors.append(f"Scout: geocoding failed — {e}")
-            return {"events": [], "errors": errors}
+            run_stats.append({"agent": "scout", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "none"})
+            return {"events": [], "errors": errors, "run_stats": run_stats}
 
         # Fan out to all 3 sources concurrently
         tm_task  = fetch_ticketmaster(city, lat, lng, date, prefs, client)
@@ -469,10 +474,12 @@ async def scout_node(state: PlannerState) -> dict:
             seen.append(name_lower)
             deduped.append(ev)
 
-    # Sort by relevance, cap at 20 events for Curator's context window
-    ranked = sorted(deduped, key=lambda e: e["relevance_score"], reverse=True)[:20]
+    # Sort by relevance, cap at 12 events — keeps Curator's prompt tight and fast
+    ranked = sorted(deduped, key=lambda e: e["relevance_score"], reverse=True)[:12]
 
+    run_stats.append({"agent": "scout", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "none"})
     return {
         "events": ranked,
         "errors": errors,
+        "run_stats": run_stats,
     }

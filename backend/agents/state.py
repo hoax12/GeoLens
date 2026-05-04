@@ -37,6 +37,7 @@ class ItineraryStop(TypedDict):
     cost: float
     budget_remaining: float
     notes: str                 # Curator's reasoning (e.g. "chosen for jazz + low cost")
+    peak_warning: str          # Crowd/timing warning; empty string if none
 
 
 class TravelLeg(TypedDict):
@@ -91,3 +92,4 @@ class PlannerState(TypedDict):
     # ── Pipeline metadata ─────────────────────────────────────────────
     errors: list[str]          # Accumulated non-fatal errors from any agent
     started_at: str            # ISO timestamp for LangSmith tracing
+    run_stats: list[dict]      # [{agent, tokens_used, latency_ms, model_used}] — one entry per agent

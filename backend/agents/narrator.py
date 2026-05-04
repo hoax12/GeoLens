@@ -22,6 +22,7 @@ Navigator's logistics. This is the capstone proof of sequential A2A.
 import json
 import logging
 import re
+import time
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langsmith import traceable
@@ -46,13 +47,12 @@ budget data, and the user's original goal — and you write a polished,
 conversational summary.
 
 ## Your responsibilities
-1. Write a 3–5 paragraph `summary` that reads like a friendly local guide
-   narrating the user's upcoming day. Mention specific venue names, times,
-   and why each stop was chosen. Reference the user's original goal/preferences.
-2. Write a `reasoning` paragraph explaining any trade-offs: events that were
-   dropped, budget constraints, or time conflicts the Curator resolved.
-3. If the plan is over budget, acknowledge it explicitly and suggest what
-   could be cut.
+1. Write a 2-paragraph `summary` that reads like a friendly local guide.
+   Paragraph 1: the flow of the day (venues, times, vibe). Paragraph 2: budget
+   and how the plan matches the user's preferences. Be specific — name venues
+   and costs. If the plan is over budget, say so and suggest what to cut.
+2. Write a 1–2 sentence `reasoning` noting any key trade-offs (dropped events,
+   time conflicts, budget constraints) the Curator resolved.
 
 ## Output Format
 Return ONLY valid JSON — no markdown fences, no prose outside the JSON:
@@ -267,6 +267,15 @@ def _validate_plan(data: dict) -> Plan:
     )
 
 
+# ── LLM stats extraction ─────────────────────────────────────────────────────
+
+def _llm_stats(response) -> tuple[int, str]:
+    """Extract (total_tokens, model_name) from a LangChain AIMessage."""
+    tokens = int((getattr(response, 'usage_metadata', None) or {}).get('total_tokens', 0) or 0)
+    model  = str((getattr(response, 'response_metadata', None) or {}).get('model_name', 'unknown') or 'unknown')
+    return tokens, model
+
+
 # ── Main Narrator node ───────────────────────────────────────────────────────
 
 @traceable(name="narrator_node")
@@ -278,18 +287,21 @@ async def narrator_node(state: PlannerState) -> dict:
 
     TRUE A2A DEPENDENCY: Requires both Curator AND Navigator output.
     """
-    itinerary = state.get("itinerary", [])
-    logistics = state.get("logistics")
-    events = state.get("events", [])
-    budget = state.get("budget", 100.0)
-    user_goal = state.get("user_goal", "")
+    start       = time.monotonic()
+    itinerary   = state.get("itinerary", [])
+    logistics   = state.get("logistics")
+    events      = state.get("events", [])
+    budget      = state.get("budget", 100.0)
+    user_goal   = state.get("user_goal", "")
     preferences = state.get("preferences", [])
-    errors = list(state.get("errors", []))
+    errors      = list(state.get("errors", []))
+    run_stats   = list(state.get("run_stats", []))
 
     # ── A2A gate: require upstream output ─────────────────────────────────
     if not itinerary:
         errors.append("Narrator: no itinerary — upstream agents may have failed")
         logger.warning("[Narrator] No itinerary in state")
+        run_stats.append({"agent": "narrator", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "none"})
         return {
             "plan": Plan(
                 summary="Could not generate a day plan — no itinerary was available.",
@@ -300,6 +312,7 @@ async def narrator_node(state: PlannerState) -> dict:
                 citations=[],
             ),
             "errors": errors,
+            "run_stats": run_stats,
         }
 
     # ── Build full context ────────────────────────────────────────────────
@@ -323,6 +336,7 @@ async def narrator_node(state: PlannerState) -> dict:
             HumanMessage(content=user_message),
         ]
         response = await ainvoke_with_fallback(llm, messages, temperature=0.8)
+        tokens_used, model_used = _llm_stats(response)
         data = _extract_json(response.content)
         plan = _validate_plan(data)
 
@@ -333,7 +347,8 @@ async def narrator_node(state: PlannerState) -> dict:
             len(plan["citations"]),
         )
 
-        return {"plan": plan, "errors": errors}
+        run_stats.append({"agent": "narrator", "tokens_used": tokens_used, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": model_used})
+        return {"plan": plan, "errors": errors, "run_stats": run_stats}
 
     except Exception as exc:
         errors.append(f"Narrator: LLM/parsing failed — {exc}")
@@ -341,4 +356,5 @@ async def narrator_node(state: PlannerState) -> dict:
 
         # Deterministic fallback — still produces a usable plan
         fallback = _build_fallback_plan(itinerary, logistics, budget, events)
-        return {"plan": fallback, "errors": errors}
+        run_stats.append({"agent": "narrator", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "error"})
+        return {"plan": fallback, "errors": errors, "run_stats": run_stats}

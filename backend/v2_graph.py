@@ -14,11 +14,14 @@ Provides two execution modes:
   - run_v2_graph_streaming() — async generator yielding SSE progress events
 """
 
+import hashlib
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from typing import AsyncGenerator
 
+import redis.asyncio as aioredis
 from langgraph.graph import END, START, StateGraph
 
 from agents.state import PlannerState
@@ -28,6 +31,25 @@ from agents.navigator import navigator_node
 from agents.narrator import narrator_node
 
 logger = logging.getLogger(__name__)
+
+
+# ── Redis cache ───────────────────────────────────────────────────────────────
+
+_REDIS_URL   = os.getenv("REDIS_URL", "redis://localhost:6379")
+_CACHE_TTL   = 6 * 3600  # 6 hours
+_redis: aioredis.Redis | None = None
+
+
+def _get_redis() -> aioredis.Redis:
+    global _redis
+    if _redis is None:
+        _redis = aioredis.from_url(_REDIS_URL, decode_responses=True)
+    return _redis
+
+
+def _cache_key(city: str, date: str, preferences: list[str]) -> str:
+    raw = f"{city.lower()}|{date}|{','.join(sorted(preferences))}"
+    return "geolens:v2:" + hashlib.sha256(raw.encode()).hexdigest()
 
 
 # ── Graph Construction ────────────────────────────────────────────────────────
@@ -97,6 +119,16 @@ async def run_v2_graph(
     if date is None:
         date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
+    # ── Cache read ────────────────────────────────────────────────────────
+    key = _cache_key(city, date, preferences)
+    try:
+        cached = await _get_redis().get(key)
+        if cached:
+            logger.info("[V2 Pipeline] Cache hit: city=%r date=%s", city, date)
+            return json.loads(cached)
+    except Exception as exc:
+        logger.warning("[V2 Pipeline] Redis read failed (%s) — running pipeline", exc)
+
     initial_state: PlannerState = {
         "city": city,
         "user_goal": user_goal,
@@ -108,6 +140,7 @@ async def run_v2_graph(
         "logistics": None,
         "plan": None,
         "errors": [],
+        "run_stats": [],
         "started_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -126,7 +159,16 @@ async def run_v2_graph(
         "yes" if result.get("plan") else "no",
     )
 
-    return _extract_result(result)
+    payload = _extract_result(result)
+
+    # ── Cache write ───────────────────────────────────────────────────────
+    try:
+        await _get_redis().setex(key, _CACHE_TTL, json.dumps(payload, default=str))
+        logger.info("[V2 Pipeline] Cached result (TTL 6h): city=%r date=%s", city, date)
+    except Exception as exc:
+        logger.warning("[V2 Pipeline] Redis write failed (%s) — result not cached", exc)
+
+    return payload
 
 
 def _extract_result(state: dict) -> dict:
@@ -137,6 +179,7 @@ def _extract_result(state: dict) -> dict:
         "logistics": state.get("logistics"),
         "events": state.get("events", []),
         "errors": state.get("errors", []),
+        "run_stats": state.get("run_stats", []),
     }
 
 
@@ -176,6 +219,7 @@ async def run_v2_graph_streaming(
         "logistics": None,
         "plan": None,
         "errors": [],
+        "run_stats": [],
         "started_at": datetime.now(timezone.utc).isoformat(),
     }
 

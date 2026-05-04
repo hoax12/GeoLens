@@ -16,6 +16,7 @@ Remove the Curator and Navigator has no venues to route between.
 import asyncio
 import logging
 import os
+import time
 from math import radians, sin, cos, sqrt, atan2
 
 import httpx
@@ -175,6 +176,40 @@ async def build_travel_leg(
     )
 
 
+# ── Nearest-neighbor stop reordering ────────────────────────────────────────
+
+def _nearest_neighbor_sort(stops: list[ItineraryStop]) -> list[ItineraryStop]:
+    """
+    Greedy nearest-neighbor reorder to minimise total route distance.
+    The first stop is kept as the morning anchor; the rest are reordered.
+    Original time slots are redistributed in the new order so the schedule
+    stays chronological even after geographic optimisation.
+    """
+    if len(stops) <= 2:
+        return stops
+
+    with_coords = [s for s in stops if not (s["lat"] == 0.0 and s["lng"] == 0.0)]
+    no_coords   = [s for s in stops if s["lat"] == 0.0 and s["lng"] == 0.0]
+
+    if len(with_coords) <= 2:
+        return stops
+
+    ordered: list[ItineraryStop] = [with_coords[0]]
+    remaining = list(with_coords[1:])
+    while remaining:
+        last = ordered[-1]
+        nearest = min(
+            remaining,
+            key=lambda s: _haversine_km(last["lat"], last["lng"], s["lat"], s["lng"]),
+        )
+        ordered.append(nearest)
+        remaining.remove(nearest)
+
+    reordered = ordered + no_coords
+    original_times = [s["time"] for s in stops]
+    return [{**s, "time": original_times[i]} for i, s in enumerate(reordered)]  # type: ignore[return-value]
+
+
 # ── Main Navigator node ──────────────────────────────────────────────────────
 
 @traceable(name="navigator_node")
@@ -187,14 +222,17 @@ async def navigator_node(state: PlannerState) -> dict:
     TRUE A2A DEPENDENCY: If state["itinerary"] is empty,
     Navigator cannot route — returns an error.
     """
+    start     = time.monotonic()
     itinerary = state.get("itinerary", [])
-    budget = state.get("budget", 100.0)
-    errors = list(state.get("errors", []))
+    budget    = state.get("budget", 100.0)
+    errors    = list(state.get("errors", []))
+    run_stats = list(state.get("run_stats", []))
 
     # ── A2A gate: require Curator output ──────────────────────────────────
     if not itinerary:
         errors.append("Navigator: no itinerary from Curator — cannot route")
         logger.warning("[Navigator] No itinerary in state — Curator may have failed")
+        run_stats.append({"agent": "navigator", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "none"})
         return {
             "logistics": Logistics(
                 legs=[],
@@ -205,31 +243,35 @@ async def navigator_node(state: PlannerState) -> dict:
                 budget_warning="No itinerary to route.",
             ),
             "errors": errors,
+            "run_stats": run_stats,
         }
+
+    # ── Reorder stops geographically before routing ───────────────────────
+    ordered = _nearest_neighbor_sort(itinerary)
+    if ordered is not itinerary:
+        logger.info("[Navigator] Reordered %d stops by nearest-neighbor proximity", len(ordered))
 
     # ── Build travel legs between consecutive stops ───────────────────────
     legs: list[TravelLeg] = []
 
     async with httpx.AsyncClient() as client:
-        # Build legs concurrently for all consecutive stop pairs
         tasks = [
-            build_travel_leg(itinerary[i], itinerary[i + 1], client)
-            for i in range(len(itinerary) - 1)
+            build_travel_leg(ordered[i], ordered[i + 1], client)
+            for i in range(len(ordered) - 1)
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
     for i, result in enumerate(results):
         if isinstance(result, Exception):
             errors.append(
-                f"Navigator: leg {i} failed ({itinerary[i]['venue']} "
-                f"-> {itinerary[i+1]['venue']}): {result}"
+                f"Navigator: leg {i} failed ({ordered[i]['venue']} "
+                f"-> {ordered[i+1]['venue']}): {result}"
             )
-            # Insert a placeholder leg
             legs.append(TravelLeg(
-                from_venue=itinerary[i]["venue"],
-                to_venue=itinerary[i + 1]["venue"],
-                departure_time=itinerary[i]["time"],
-                arrival_time=itinerary[i + 1]["time"],
+                from_venue=ordered[i]["venue"],
+                to_venue=ordered[i + 1]["venue"],
+                departure_time=ordered[i]["time"],
+                arrival_time=ordered[i + 1]["time"],
                 duration_minutes=15,
                 mode="transit",
                 estimated_cost=3.0,
@@ -240,7 +282,7 @@ async def navigator_node(state: PlannerState) -> dict:
 
     # ── Compute totals ────────────────────────────────────────────────────
     total_transport = sum(leg["estimated_cost"] for leg in legs)
-    total_events = sum(stop["cost"] for stop in itinerary)
+    total_events = sum(stop["cost"] for stop in ordered)
     grand_total = round(total_transport + total_events, 2)
 
     budget_ok = grand_total <= budget
@@ -270,4 +312,5 @@ async def navigator_node(state: PlannerState) -> dict:
         len(legs), total_transport, total_events, grand_total, budget_ok,
     )
 
-    return {"logistics": logistics, "errors": errors}
+    run_stats.append({"agent": "navigator", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "none"})
+    return {"itinerary": ordered, "logistics": logistics, "errors": errors, "run_stats": run_stats}

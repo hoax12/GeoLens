@@ -18,6 +18,7 @@ The LLM receives the full ranked event list and must:
 import json
 import logging
 import re
+import time
 from datetime import datetime, timezone
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -38,7 +39,7 @@ You receive a ranked list of events/venues discovered by a Scout agent.
 Your job is to build a realistic, conflict-free day itinerary from these events.
 
 ## Rules
-1. Select 4–7 stops that fit within a single day (roughly 9 AM to 11 PM).
+1. Select 3–5 stops that fit within a single day (roughly 9 AM to 11 PM).
 2. Space stops at least 45 minutes apart to allow travel time.
 3. Never schedule overlapping events.
 4. The total cost of all selected stops MUST stay within the user's budget.
@@ -46,8 +47,14 @@ Your job is to build a realistic, conflict-free day itinerary from these events.
    - Reserve ~20% of budget for meals/snacks if no food stops are included.
 5. Prefer events with higher relevance_score (the Scout already ranked them).
 6. If two events conflict in time, pick the one with higher relevance_score.
-7. For each stop, write a short `notes` field explaining WHY you chose it
-   (e.g. "High relevance to jazz preference, low cost leaves budget room").
+7. For each stop, write a ONE-SENTENCE `notes` field explaining the key reason you chose it.
+8. For each stop, add a `peak_warning` field: a ONE-SENTENCE crowd/timing warning if the
+   scheduled time coincides with a known busy period for that venue type. Examples:
+   - Museums/galleries: busy 10 AM–2 PM on weekends
+   - Restaurants: busy 12–1 PM (lunch) and 7–9 PM (dinner)
+   - Markets: busy Saturday mornings
+   - Concert venues: busy 30 min before show time
+   Leave as "" if no warning applies or the slot is already off-peak.
 
 ## Output Format
 Return ONLY a valid JSON object with the following structure — no markdown
@@ -64,7 +71,8 @@ fences, no explanation, no prose outside the JSON:
       "lng": -74.0006,
       "cost": 25.00,
       "budget_remaining": 95.00,
-      "notes": "Chosen for jazz preference match (score 0.95). Morning slot avoids crowd."
+      "notes": "Chosen for jazz preference match (score 0.95). Morning slot avoids crowd.",
+      "peak_warning": ""
     }
   ]
 }
@@ -175,9 +183,19 @@ def _validate_itinerary(data: dict, budget: float) -> list[ItineraryStop]:
             cost=cost,
             budget_remaining=round(max(running_budget, 0.0), 2),
             notes=str(stop.get("notes", "")),
+            peak_warning=str(stop.get("peak_warning", "")),
         ))
 
     return stops
+
+
+# ── LLM stats extraction ─────────────────────────────────────────────────────
+
+def _llm_stats(response) -> tuple[int, str]:
+    """Extract (total_tokens, model_name) from a LangChain AIMessage."""
+    tokens = int((getattr(response, 'usage_metadata', None) or {}).get('total_tokens', 0) or 0)
+    model  = str((getattr(response, 'response_metadata', None) or {}).get('model_name', 'unknown') or 'unknown')
+    return tokens, model
 
 
 # ── Main Curator node ─────────────────────────────────────────────────────────
@@ -192,26 +210,43 @@ async def curator_node(state: PlannerState) -> dict:
     TRUE A2A DEPENDENCY: If state["events"] is empty or missing,
     the Curator cannot build an itinerary — it returns an error.
     """
+    start  = time.monotonic()
     events = state.get("events", [])
     budget = state.get("budget", 100.0)
     prefs  = state.get("preferences", [])
     errors = list(state.get("errors", []))
+    run_stats = list(state.get("run_stats", []))
 
     # ── A2A gate: require Scout output ────────────────────────────────────
     if not events:
         errors.append("Curator: no events from Scout — cannot build itinerary")
         logger.warning("[Curator] No events in state — Scout may have failed")
-        return {"itinerary": [], "errors": errors}
+        run_stats.append({"agent": "curator", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "none"})
+        return {"itinerary": [], "errors": errors, "run_stats": run_stats}
 
     # ── Build prompt context ──────────────────────────────────────────────
     event_context = _format_events_for_prompt(events, budget)
-    pref_str = ", ".join(prefs) if prefs else "no specific preferences"
+
+    local_mode = any(p.lower().replace(" ", "_") == "local_mode" for p in prefs)
+    display_prefs = [p for p in prefs if p.lower().replace(" ", "_") != "local_mode"]
+    pref_str = ", ".join(display_prefs) if display_prefs else "no specific preferences"
+
+    local_instruction = ""
+    if local_mode:
+        local_instruction = (
+            "\nLOCAL MODE ACTIVE: The user wants to experience the city like a resident, not a tourist. "
+            "STRONGLY PREFER: independent/family-owned venues, neighborhood spots away from tourist zones, "
+            "local markets, community events, and places frequented by residents. "
+            "ACTIVELY AVOID: chain restaurants, hotel bars, venues in major tourist zones, "
+            "and attractions that dominate generic guidebooks.\n"
+        )
 
     user_message = (
         f"Build a day itinerary for the following city events.\n"
         f"User preferences: {pref_str}\n"
-        f"Budget: ${budget:.2f}\n\n"
-        f"{event_context}\n\n"
+        f"Budget: ${budget:.2f}\n"
+        f"{local_instruction}"
+        f"\n{event_context}\n\n"
         f"Select the best 4-7 stops, schedule them chronologically, "
         f"track the budget, and explain each choice in the notes field. "
         f"Return the JSON itinerary now:"
@@ -225,6 +260,7 @@ async def curator_node(state: PlannerState) -> dict:
             HumanMessage(content=user_message),
         ]
         response = await ainvoke_with_fallback(llm, messages, temperature=0.6)
+        tokens_used, model_used = _llm_stats(response)
         data = _extract_json(response.content)
         itinerary = _validate_itinerary(data, budget)
 
@@ -234,9 +270,11 @@ async def curator_node(state: PlannerState) -> dict:
             itinerary[-1]["budget_remaining"] if itinerary else budget,
         )
 
-        return {"itinerary": itinerary, "errors": errors}
+        run_stats.append({"agent": "curator", "tokens_used": tokens_used, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": model_used})
+        return {"itinerary": itinerary, "errors": errors, "run_stats": run_stats}
 
     except Exception as exc:
         errors.append(f"Curator: LLM/parsing failed — {exc}")
         logger.error("[Curator] Failed: %s", exc, exc_info=True)
-        return {"itinerary": [], "errors": errors}
+        run_stats.append({"agent": "curator", "tokens_used": 0, "latency_ms": int((time.monotonic() - start) * 1000), "model_used": "error"})
+        return {"itinerary": [], "errors": errors, "run_stats": run_stats}

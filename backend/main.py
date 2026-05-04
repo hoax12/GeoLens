@@ -64,6 +64,10 @@ class CityInfoRequest(BaseModel):
     )
 
 
+class CitySafetyRequest(BaseModel):
+    city: str = Field(..., min_length=1, max_length=100, examples=["London"])
+
+
 class DayPlanRequest(BaseModel):
     city: str = Field(..., min_length=1, max_length=100, examples=["San Francisco"])
     user_goal: str = Field(
@@ -126,6 +130,21 @@ async def city_info(request: CityInfoRequest) -> dict:
                 f"(`ollama serve`) and the model is pulled. Error: {exc}"
             ),
         ) from exc
+
+
+# ─── Safety Briefing ─────────────────────────────────────────────────────────
+
+@app.post("/api/city-safety", tags=["agents"])
+async def city_safety(request: CitySafetyRequest) -> dict:
+    """
+    Generate 4-5 safety tips for tourists visiting the given city.
+    Uses GNews for recent articles + LLM synthesis.
+    Returns: { city: str, tips: [{ title, description, level, icon }] }
+    """
+    from agents.safety import fetch_safety_briefing
+    logger.info("▶ /api/city-safety  city=%r", request.city)
+    tips = await fetch_safety_briefing(request.city)
+    return {"city": request.city, "tips": tips}
 
 
 # ─── V2: Day Planner (Sequential A2A Pipeline) ───────────────────────────────
